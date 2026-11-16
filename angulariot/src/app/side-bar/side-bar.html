@@ -1,0 +1,30 @@
+<nav class="barra">
+  <div class="marca">
+    <img src="logo.svg" alt="" class="marca-logo">
+    <span class="marca-nome">IOT</span>
+  </div>
+
+  <div class="menu">
+    <a routerLink="/dashboard" routerLinkActive="ativo" class="item">
+      <img src="home.png" alt="" class="item-icone">
+      Dashboard
+    </a>
+    <a routerLink="/registro" routerLinkActive="ativo" class="item">
+      <img src="registro.png" alt="" class="item-icone">
+      Cadastrar usuário
+    </a>
+  </div>
+
+  <div class="rodape">
+    @if (usuario) {
+      <div class="usuario">
+        <span class="usuario-rotulo">Conectado como</span>
+        <span class="usuario-nome">{{ usuario.nome || usuario.email }}</span>
+      </div>
+    }
+    <button type="button" class="item sair" (click)="logout()">
+      <img src="logout.png" alt="" class="item-icone">
+      Sair
+    </button>
+  </div>
+</nav>

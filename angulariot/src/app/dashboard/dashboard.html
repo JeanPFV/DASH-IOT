@@ -1,0 +1,175 @@
+<main>
+  <app-side-bar></app-side-bar>
+
+  <section class="conteudo">
+    <header class="cabecalho">
+      <div>
+        <h2 class="titulo">Acessos</h2>
+        <p class="subtitulo">
+          Olá, {{ usuario?.nome || 'usuário' }}.
+          @if (atualizadoEm(); as hora) {
+            Atualizado às {{ hora | date:'HH:mm:ss' }} (a cada 10 s).
+          }
+        </p>
+      </div>
+
+      <div class="filtro" role="group" aria-label="Período">
+        @for (p of periodos; track p) {
+          <button type="button" [class.ativo]="dias() === p" (click)="mudarPeriodo(p)">{{ p }} dias</button>
+        }
+      </div>
+    </header>
+
+    @if (erro()) {
+      <p class="aviso-erro">{{ erro() }}</p>
+    }
+
+    @if (dados(); as d) {
+      <!-- Números principais -->
+      <div class="tiles">
+        <div class="tile tile-destaque">
+          <span class="tile-rotulo">Acessos liberados hoje</span>
+          <span class="tile-valor hero">{{ d.resumo.hoje }}</span>
+        </div>
+        <div class="tile">
+          <span class="tile-rotulo">Liberados em {{ d.dias }} dias</span>
+          <span class="tile-valor">{{ d.resumo.sucesso }}</span>
+          <span class="tile-extra">{{ d.resumo.por_digital }} por digital</span>
+        </div>
+        <div class="tile">
+          <span class="tile-rotulo">Tentativas negadas</span>
+          <span class="tile-valor">{{ d.resumo.falha }}</span>
+          <span class="tile-extra">{{ taxaSucesso(d) }}% das tentativas liberadas</span>
+        </div>
+        <div class="tile">
+          <span class="tile-rotulo">Pessoas que entraram</span>
+          <span class="tile-valor">{{ d.resumo.usuarios_distintos }}</span>
+          <span class="tile-extra">{{ d.resumo.usuarios_com_digital }} com digital cadastrada</span>
+        </div>
+      </div>
+
+      <div class="linha">
+        <!-- Gráfico por dia -->
+        <div class="card card-grafico">
+          <div class="card-topo">
+            <h3>Acessos por dia</h3>
+            <div class="legenda">
+              <span class="legenda-item"><span class="chave liberado"></span>Liberados</span>
+              <span class="legenda-item"><span class="chave negado"></span>✕ Negados</span>
+            </div>
+          </div>
+
+          <div class="grafico">
+            <div class="eixo-y" aria-hidden="true">
+              @for (m of escala().marcas; track m) {
+                <span [style.bottom.%]="altura(m)">{{ m }}</span>
+              }
+            </div>
+
+            <div class="plot">
+              @for (m of escala().marcas; track m) {
+                <div class="grade" [class.base]="m === 0" [style.bottom.%]="altura(m)"></div>
+              }
+
+              <div class="colunas">
+                @for (p of d.por_dia; track p.dia; let i = $index) {
+                  <div class="coluna" tabindex="0"
+                       [attr.aria-label]="descricaoColuna(p)"
+                       (mouseenter)="colunaEmFoco.set(i)" (mouseleave)="colunaEmFoco.set(null)"
+                       (focus)="colunaEmFoco.set(i)" (blur)="colunaEmFoco.set(null)">
+                    <div class="pilha">
+                      @if (p.sucesso > 0) {
+                        <div class="seg liberado" [style.height.%]="altura(p.sucesso)"></div>
+                      }
+                      @if (p.falha > 0) {
+                        <div class="seg negado" [style.height.%]="altura(p.falha)"></div>
+                      }
+                    </div>
+
+                    @if (colunaEmFoco() === i) {
+                      <div class="tooltip" [class.a-esquerda]="i > d.por_dia.length / 2">
+                        <strong>{{ diaDaSemana(p.dia) }}, {{ rotuloDia(p.dia) }}</strong>
+                        <span><span class="chave liberado"></span>Liberados <b>{{ p.sucesso }}</b></span>
+                        <span><span class="chave negado"></span>✕ Negados <b>{{ p.falha }}</b></span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="eixo-x" aria-hidden="true">
+            @for (p of d.por_dia; track p.dia; let i = $index) {
+              <span>{{ mostrarRotulo(i, d.por_dia.length) ? rotuloDia(p.dia) : '' }}</span>
+            }
+          </div>
+
+          <details class="tabela-grafico">
+            <summary>Ver os números em tabela</summary>
+            <table>
+              <thead><tr><th>Dia</th><th>Liberados</th><th>Negados</th></tr></thead>
+              <tbody>
+                @for (p of d.por_dia; track p.dia) {
+                  <tr><td>{{ diaDaSemana(p.dia) }}, {{ rotuloDia(p.dia) }}</td><td>{{ p.sucesso }}</td><td>{{ p.falha }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </details>
+        </div>
+
+        <!-- Ranking -->
+        <div class="card card-ranking">
+          <div class="card-topo"><h3>Quem mais entrou</h3></div>
+          @for (u of d.por_usuario; track u.usuario_id) {
+            <div class="ranking-linha">
+              <span class="ranking-nome" [title]="u.nome || ''">{{ u.nome || ('Usuário ' + u.usuario_id) }}</span>
+              <div class="ranking-trilho">
+                <div class="ranking-barra" [style.width.%]="larguraRanking(u.total)"></div>
+                <span class="ranking-valor">{{ u.total }}</span>
+              </div>
+            </div>
+          } @empty {
+            <p class="vazio">Ninguém entrou nesse período.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Últimos acessos -->
+      <div class="card">
+        <div class="card-topo"><h3>Últimos acessos</h3></div>
+        <div class="tabela-scroll">
+          <table class="tabela">
+            <thead>
+              <tr><th>Quando</th><th>Usuário</th><th>Método</th><th>Resultado</th><th class="num">Confiança</th></tr>
+            </thead>
+            <tbody>
+              @for (a of d.ultimos; track a.id) {
+                <tr>
+                  <td class="num">{{ a.quando | date:'dd/MM HH:mm:ss' }}</td>
+                  <td>
+                    {{ a.usuario || 'Desconhecido' }}
+                    @if (a.detalhe) { <span class="detalhe">{{ a.detalhe }}</span> }
+                  </td>
+                  <td>{{ a.metodo === 'digital' ? 'Digital' : 'Senha' }}</td>
+                  <td>
+                    @if (a.sucesso) {
+                      <span class="status"><span class="icone ok">✓</span>Liberado</span>
+                    } @else {
+                      <span class="status"><span class="icone negado-icone">✕</span>Negado</span>
+                    }
+                  </td>
+                  <td class="num">{{ a.confianca ?? '—' }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="vazio">Nenhum acesso registrado ainda. Entre com a digital para ver aparecer aqui.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    } @else if (!erro()) {
+      <p class="vazio">Carregando acessos...</p>
+    }
+  </section>
+</main>

@@ -1,0 +1,8 @@
+.history
+
+# credenciais
+.env
+
+# python
+__pycache__/
+*.pyc

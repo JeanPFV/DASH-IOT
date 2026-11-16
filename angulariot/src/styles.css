@@ -1,0 +1,46 @@
+/* Paleta IOT (azul e branco) - usada em todas as telas */
+:root {
+  --azul: #1d6fe0;
+  --azul-hover: #175bb8;
+  --azul-escuro: #0a1f44;
+  --azul-claro: #e8f1fd;
+  --branco: #ffffff;
+  --fundo: #f4f7fb;
+  --tinta: #0f1b2d;
+  --tinta-2: #4a5568;
+  --tinta-fraca: #8a94a6;
+  --borda: #dbe3ee;
+  --erro: #d03b3b;
+  --fonte: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--fonte);
+  color: var(--tinta);
+  background: var(--fundo);
+}
+
+/* Fundo das telas de login e cadastro: azul escuro com grade fina "de circuito" */
+.tela-auth {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 32px 32px,
+    radial-gradient(circle at 80% 10%, #1d6fe0 0%, transparent 45%),
+    linear-gradient(135deg, #0a1f44 0%, #0d2f66 100%);
+}
+
+/* Snackbar (precisa ser global porque o painel abre fora do componente) */
+.snackbar-success { --mat-snack-bar-container-color: #0f7b3e; --mat-snack-bar-supporting-text-color: #fff; --mat-snack-bar-button-color: #fff; }
+.snackbar-error   { --mat-snack-bar-container-color: #b42d2d; --mat-snack-bar-supporting-text-color: #fff; --mat-snack-bar-button-color: #fff; }
+.snackbar-info    { --mat-snack-bar-container-color: #0a1f44; --mat-snack-bar-supporting-text-color: #fff; --mat-snack-bar-button-color: #8ab8ff; }
