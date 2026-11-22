@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import AcessosDashboard, CriarUsuario, UsuariosGET, enroll_fingerprint, verify_fingerprint
+from .views import (AcessosDashboard, CriarUsuario, UsuariosGET, csrf_token,
+                    enroll_fingerprint, verify_fingerprint)
 
 urlpatterns = [
+    path('csrf/', csrf_token, name='csrf_token'),                # entrega o cookie CSRF ao Angular
     path('login/', UsuariosGET.as_view()),                       # login por e-mail e senha
     path('criarUsuario/', CriarUsuario.as_view()),               # cadastro sem digital
     path('enroll/', enroll_fingerprint, name='enroll_fingerprint'),  # cadastro com digital

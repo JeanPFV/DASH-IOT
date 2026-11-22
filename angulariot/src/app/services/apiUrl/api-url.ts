@@ -5,8 +5,10 @@ import { Injectable } from '@angular/core';
 })
 export class ApiUrl {
   
+  // URL relativa: o ng serve repassa /api ao Django (proxy.conf.json). Assim a API fica na
+  // mesma origem do site e o Angular consegue anexar o token CSRF nos POSTs.
   apiUrl() {
-    return 'http://127.0.0.1:8000/api'
+    return '/api'
   }
 
 }

@@ -59,9 +59,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# Só o front-end Angular pode chamar a API pelo navegador (antes: qualquer origem)
+CORS_ALLOW_ALL_ORIGINS = False
 
-CORS_ALLOWED_ORIGINS = ['http://192.168.0.106:8000', 'http://127.0.0.1:8000', 'http://10.162.21.128:8000', 'http://localhost:4200']
+CORS_ALLOWED_ORIGINS = ['http://localhost:4200', 'http://127.0.0.1:4200']
+
+# O Angular (porta 4200) repassa /api para o Django pelo proxy do ng serve; o Django
+# confere o header Origin do POST contra esta lista ao validar o token CSRF.
+CSRF_TRUSTED_ORIGINS = ['http://localhost:4200', 'http://127.0.0.1:4200']
 
 ROOT_URLCONF = 'sisiot.urls'
 

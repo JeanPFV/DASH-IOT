@@ -7,7 +7,8 @@ from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET, require_POST
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -96,11 +97,18 @@ class CriarUsuario(APIView):
             return Response({"Sucesso": "Usuário salvo com sucesso!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@csrf_exempt
+@require_GET
+@ensure_csrf_cookie
+def csrf_token(request):
+    """Entrega o cookie csrftoken ao front-end; o Angular o devolve no header X-CSRFToken."""
+    return JsonResponse({'status': 'ok'})
+
+
+# Sem isenção de CSRF: o CsrfViewMiddleware exige o token, então outro site não consegue
+# disparar o cadastro nem a leitura do sensor pelo navegador de quem está na máquina.
+@require_POST
 def enroll_fingerprint(request):
     """Cria o usuário no Supabase e manda o ESP32 gravar a digital na posição = id do usuário."""
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Método inválido'}, status=405)
     try:
         data = json.loads(request.body or b'{}')
     except json.JSONDecodeError:
@@ -137,12 +145,9 @@ def enroll_fingerprint(request):
     })
 
 
-@csrf_exempt
+@require_POST
 def verify_fingerprint(request):
     """Pede uma leitura ao ESP32, identifica o usuário e registra o acesso no Supabase."""
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Método inválido'}, status=405)
-
     try:
         resposta = enviar_comando('verificar', timeout=TEMPO_VERIFICAR)
     except SensorIndisponivel as e:
